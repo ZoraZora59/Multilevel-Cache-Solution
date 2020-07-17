@@ -1,13 +1,14 @@
 package cn.gk.multilevel.cache.sdk.service;
 
-import cn.gk.multilevel.cache.sdk.model.LruHashMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +26,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 @Service
 class TimeWindowService {
+    @Value("multilevelCache.singleTimeWindow.keyCount")
+    private String userKeyCountValue;
+    private int keyCount = 0;
+    public static final int DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW = 128;
     public static final int TIME_WINDOW_COUNT = 4;
     private final ReentrantLock lock = new ReentrantLock();
     /**
@@ -57,12 +62,22 @@ class TimeWindowService {
         }, 0, 25, TimeUnit.SECONDS);
     }
 
+    @PostConstruct
+    private void initKeyCount() {
+        try {
+            keyCount = Integer.parseInt(userKeyCountValue);
+            keyCount = keyCount <= 0 ? 128 : keyCount;
+        } catch (NumberFormatException numberFormatException) {
+            keyCount = DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW;
+        }
+    }
+
     private void putNewSingleTimeWindowMap(int minuteFlag) {
         if (!timeWindowsMap.containsKey(minuteFlag)) {
             lock.lock();
             try {
                 if (!timeWindowsMap.containsKey(minuteFlag)) {
-                    timeWindowsMap.put(minuteFlag, new LruHashMap<>(6, 1F, true, 6));
+                    timeWindowsMap.put(minuteFlag, new LruHashMap<>(keyCount, 1F, true, keyCount));
                 }
             } finally {
                 lock.unlock();
@@ -85,5 +100,35 @@ class TimeWindowService {
             putNewSingleTimeWindowMap(currentWindow);
         }
         tryIncreaseCount(key, currentWindow);
+    }
+
+    /**
+     * <h4>multilevel-cache-solution</h4>
+     * <h5>cn.gk.multilevel.cache.sdk.model</h5>
+     * <p>LRU淘汰模式的ConcurrentHashMap</p>
+     *
+     * @author zora
+     * @since 2020.07.16
+     */
+    private static class LruHashMap<K, V> extends LinkedHashMap<K, V> {
+        private int maxSize = -1;
+
+        public LruHashMap(int initialCapacity, float loadFactor, boolean accessOrder) {
+            super(initialCapacity, loadFactor, accessOrder);
+        }
+
+        public LruHashMap(int initialCapacity, float loadFactor, boolean accessOrder, int maxSize) {
+            super(initialCapacity, loadFactor, accessOrder);
+            this.maxSize = maxSize;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+            if (maxSize > 0) {
+                return size() > maxSize;
+            } else {
+                return false;
+            }
+        }
     }
 }
