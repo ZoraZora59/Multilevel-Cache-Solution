@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 @Service
 class TimeWindowService {
-    @Value("multilevelCache.singleTimeWindow.keyCount")
+    @Value("${multilevelCache.singleTimeWindow.keyCount}")
     private String userKeyCountValue;
     private int keyCount = 0;
     public static final int DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW = 128;
@@ -70,6 +70,7 @@ class TimeWindowService {
         } catch (NumberFormatException numberFormatException) {
             keyCount = DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW;
         }
+        log.info("[Multilevel-Cache]----配置的单窗口最大统计key数为{}个.", keyCount);
     }
 
     private void putNewSingleTimeWindowMap(int minuteFlag) {

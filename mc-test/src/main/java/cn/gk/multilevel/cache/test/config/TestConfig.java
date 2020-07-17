@@ -18,7 +18,7 @@ public class TestConfig {
 
     @Bean
     public static Cache<String, String> defaultLocalCache() {
-        System.out.println("启用自定义的本地缓存");
+        System.out.println("测试类：启用自定义的本地缓存");
 //        return new MultilevelCacheBuilder().withMemoryUsage(64*1024).buildByWeightStrategy();
         return new MultilevelCacheBuilder().withCacheCount(12).buildByCacheSizeStrategy();
     }

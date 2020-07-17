@@ -23,8 +23,8 @@ public class CacheSdkTest {
     public void redisWriteAndGet() {
         multilevelCacheTemplate.putObjectIntoCache("测试key", new ArrayList<>());
         multilevelCacheTemplate.putObjectIntoCache("测试key2", "wafawefaw");
-        System.out.println(multilevelCacheTemplate.tryGetValue("测试key2", String.class));
-        System.out.println(multilevelCacheTemplate.tryGetValueArrays("测试key", List.class));
+        System.out.println("测试类：" + multilevelCacheTemplate.tryGetValue("测试key2", String.class));
+        System.out.println("测试类：" + multilevelCacheTemplate.tryGetValueArrays("测试key", List.class));
         multilevelCacheTemplate.cleanCacheByKey("测试key");
         multilevelCacheTemplate.cleanCacheByKey("测试key2");
     }
