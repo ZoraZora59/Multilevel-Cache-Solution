@@ -90,7 +90,7 @@ class CacheService {
         String targetValue;
         targetValue = tryGetFromRam(key);
         if (StringUtils.isEmpty(targetValue)) {
-            log.debug("在Ram中获取失败，尝试从Redis获取");
+            log.info("在Ram中获取失败，尝试从Redis获取");
             targetValue = tryGetFromRedis(key);
         }
         return targetValue;

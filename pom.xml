@@ -24,6 +24,7 @@
         <maven-surefire-plugin>3.0.0-M3</maven-surefire-plugin>
 
         <lombok.version>1.18.12</lombok.version>
+        <lruLinkedHashMap.version>1.4.2</lruLinkedHashMap.version>
         <spring-boot-starter.version>2.2.4.RELEASE</spring-boot-starter.version>
         <commons-lang3.version>3.10</commons-lang3.version>
         <hutool.version>5.3.1</hutool.version>
@@ -40,6 +41,11 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+                <artifactId>concurrentlinkedhashmap-lru</artifactId>
+                <version>${lruLinkedHashMap.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>

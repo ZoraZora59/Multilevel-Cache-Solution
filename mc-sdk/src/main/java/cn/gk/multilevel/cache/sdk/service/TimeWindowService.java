@@ -1,6 +1,9 @@
 package cn.gk.multilevel.cache.sdk.service;
 
+import cn.gk.multilevel.cache.sdk.model.LruHashMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.Weighers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -80,7 +83,10 @@ class TimeWindowService {
             lock.lock();
             try {
                 if (!timeWindowsMap.containsKey(minuteFlag)) {
-                    timeWindowsMap.put(minuteFlag, new LruHashMap<>(keyCount, 1F, true, keyCount));
+                    timeWindowsMap.put(minuteFlag, new ConcurrentLinkedHashMap.Builder<String,AtomicInteger>()
+                            .maximumWeightedCapacity(keyCount)
+                            .weigher(Weighers.singleton())
+                            .build());
                 }
             } finally {
                 lock.unlock();
@@ -105,37 +111,7 @@ class TimeWindowService {
         tryIncreaseCount(key, currentWindow);
     }
 
-    public List<Map<String,AtomicInteger>> getCurrentWindowsMapDataList(){
+    public List<Map<String, AtomicInteger>> getCurrentWindowsMapDataList() {
         return new ArrayList<>(timeWindowsMap.values());
-    }
-
-    /**
-     * <h4>multilevel-cache-solution</h4>
-     * <h5>cn.gk.multilevel.cache.sdk.model</h5>
-     * <p>添加了LRU淘汰模式的LinkedHashMap</p>
-     *
-     * @author zora
-     * @since 2020.07.16
-     */
-    private static class LruHashMap<K, V> extends LinkedHashMap<K, V> {
-        private int maxSize = -1;
-
-        public LruHashMap(int initialCapacity, float loadFactor, boolean accessOrder) {
-            super(initialCapacity, loadFactor, accessOrder);
-        }
-
-        public LruHashMap(int initialCapacity, float loadFactor, boolean accessOrder, int maxSize) {
-            super(initialCapacity, loadFactor, accessOrder);
-            this.maxSize = maxSize;
-        }
-
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-            if (maxSize > 0) {
-                return size() > maxSize;
-            } else {
-                return false;
-            }
-        }
     }
 }
