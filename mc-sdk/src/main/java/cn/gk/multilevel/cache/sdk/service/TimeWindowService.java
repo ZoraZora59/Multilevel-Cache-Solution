@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,13 +24,13 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 @Service
-public class TimeWindowService {
+class TimeWindowService {
     public static final int TIME_WINDOW_COUNT = 4;
     private final ReentrantLock lock = new ReentrantLock();
     /**
      * 时间窗表： [时间字符串：(缓存key：热度)]
      */
-    private final static HashMap<Integer, Map<String, AtomicInteger>> timeWindowsMap = new LruHashMap<>(TIME_WINDOW_COUNT, 1F, false, TIME_WINDOW_COUNT);
+    private final static Map<Integer, Map<String, AtomicInteger>> timeWindowsMap = new LruHashMap<>(TIME_WINDOW_COUNT, 1F, false, TIME_WINDOW_COUNT);
     private final static ScheduledThreadPoolExecutor scheduledSlideExecutor = new ScheduledThreadPoolExecutor(1,
             new ThreadFactoryBuilder().setNameFormat("MC-TimeWindow").build());
 

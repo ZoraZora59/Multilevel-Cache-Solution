@@ -27,7 +27,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-public class CacheService implements McTemplate {
+class CacheService {
+    @Autowired
+    private TimeWindowService timeWindowService;
     private volatile static Cache<String, String> localCache;
     private static final int DEFAULT_REDIS_TTL = 3 * 60;
     private static StringRedisTemplate stringRedisTemplate;
@@ -59,7 +61,7 @@ public class CacheService implements McTemplate {
      * @param key 缓存key
      * @return json形式的value或null
      */
-    private String tryGetFromRam(@NonNull String key) {
+    private String tryGetFromRam(String key) {
         return localCache.getIfPresent(key);
     }
 
@@ -96,8 +98,8 @@ public class CacheService implements McTemplate {
      * @return 对象或null
      * @throws JSONException json序列化失败
      */
-    @Override
-    public <V> V tryGetValue(@NonNull String key, Class<V> clazz) throws JSONException {
+    public <V> V tryGetValue(String key, Class<V> clazz) throws JSONException {
+        timeWindowService.increaseCacheHot(key);
         return JSON.parseObject(tryGetValueByChainTrace(key), clazz);
     }
 
@@ -109,8 +111,8 @@ public class CacheService implements McTemplate {
      * @return 对象列表或null
      * @throws JSONException json序列化失败
      */
-    @Override
-    public <V> List<V> tryGetValueArrays(@NonNull String key, Class<V> clazz) throws JSONException {
+    public <V> List<V> tryGetValueArrays(String key, Class<V> clazz) throws JSONException {
+        timeWindowService.increaseCacheHot(key);
         return JSON.parseArray(tryGetValueByChainTrace(key), clazz);
     }
 
@@ -120,8 +122,7 @@ public class CacheService implements McTemplate {
      * @param key   缓存key
      * @param value 缓存对象
      */
-    @Override
-    public <T> void putObjectIntoCache(@NonNull String key, T value) {
+    public <T> void putObjectIntoCache(String key, T value) {
         putObjectIntoCache(key, value, DEFAULT_REDIS_TTL);
     }
 
@@ -132,15 +133,13 @@ public class CacheService implements McTemplate {
      * @param value 缓存对象
      * @param ttl   过期时间，单位秒
      */
-    @Override
-    public <T> void putObjectIntoCache(@NonNull String key, T value, long ttl) {
+    public <T> void putObjectIntoCache(String key, T value, long ttl) {
         stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(value), ttl, TimeUnit.SECONDS);
     }
 
     /**
      * 清理本地缓存空间
      */
-    @Override
     public void cleanUpRamCache() {
         localCache.cleanUp();
     }
@@ -148,8 +147,7 @@ public class CacheService implements McTemplate {
     /**
      * 清理本地缓存空间
      */
-    @Override
-    public void cleanCacheByKey(@NonNull String key) {
+    public void cleanCacheByKey(String key) {
         stringRedisTemplate.delete(key);
         localCache.invalidate(key);
     }

@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2020.07.15
  */
 @Service
-public class CounterService {
+class CounterService {
     private static final ThreadPoolExecutor counterExecutor=new ThreadPoolExecutor(2,4,
             60, TimeUnit.SECONDS,
             new LinkedBlockingDeque<>(256),
