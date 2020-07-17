@@ -1,14 +1,13 @@
 package cn.gk.multilevel.cache.sdk.service;
 
-import cn.gk.multilevel.cache.sdk.api.McTemplate;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -30,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 class CacheService {
     @Autowired
     private TimeWindowService timeWindowService;
+    @Autowired
+    private HotCacheManager hotCacheManager;
     private volatile static Cache<String, String> localCache;
     private static final int DEFAULT_REDIS_TTL = 3 * 60;
     private static StringRedisTemplate stringRedisTemplate;
@@ -37,6 +38,7 @@ class CacheService {
             new ThreadFactoryBuilder().setNameFormat("MC-Reporter").build());
 
     @Autowired
+    @Qualifier("MultilevelCacheInRam")
     public void initializeCache(Cache<String, String> cache) {
         localCache = cache;
         log.info("[Multilevel-Cache]----已加载缓存配置{}", cache.getClass());
@@ -134,7 +136,11 @@ class CacheService {
      * @param ttl   过期时间，单位秒
      */
     public <T> void putObjectIntoCache(String key, T value, long ttl) {
-        stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(value), ttl, TimeUnit.SECONDS);
+        String jsonString = JSON.toJSONString(value);
+        stringRedisTemplate.opsForValue().set(key, jsonString, ttl, TimeUnit.SECONDS);
+        if (hotCacheManager.isHotKey(key)) {
+            localCache.put(key, jsonString);
+        }
     }
 
     /**

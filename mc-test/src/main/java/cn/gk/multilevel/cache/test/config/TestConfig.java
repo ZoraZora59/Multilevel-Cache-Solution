@@ -1,7 +1,6 @@
 package cn.gk.multilevel.cache.test.config;
 
-import cn.gk.multilevel.cache.sdk.api.MultilevelCacheBuilder;
-import com.github.benmanes.caffeine.cache.Cache;
+import cn.gk.multilevel.cache.sdk.model.CacheConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,9 +16,9 @@ import org.springframework.context.annotation.Configuration;
 public class TestConfig {
 
     @Bean
-    public static Cache<String, String> defaultLocalCache() {
+    public static CacheConfiguration defaultLocalCache() {
         System.out.println("测试类：启用自定义的本地缓存");
 //        return new MultilevelCacheBuilder().withMemoryUsage(64*1024).buildByWeightStrategy();
-        return new MultilevelCacheBuilder().withCacheCount(12).buildByCacheSizeStrategy();
+        return CacheConfiguration.builder().build();
     }
 }

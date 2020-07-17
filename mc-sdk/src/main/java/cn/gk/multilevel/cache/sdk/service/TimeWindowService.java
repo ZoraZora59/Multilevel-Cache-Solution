@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -101,6 +103,10 @@ class TimeWindowService {
             putNewSingleTimeWindowMap(currentWindow);
         }
         tryIncreaseCount(key, currentWindow);
+    }
+
+    public List<Map<String,AtomicInteger>> getCurrentWindowsMapDataList(){
+        return new ArrayList<>(timeWindowsMap.values());
     }
 
     /**
