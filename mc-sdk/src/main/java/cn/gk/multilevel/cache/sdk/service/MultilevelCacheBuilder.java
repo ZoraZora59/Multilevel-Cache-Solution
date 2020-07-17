@@ -18,9 +18,12 @@ class MultilevelCacheBuilder {
         if (cacheConfiguration.isSoftValues()) {
             caffeineBuilder.softValues();
         }
-        caffeineBuilder.weigher(cacheConfiguration.getWeigher())
-                .maximumWeight(cacheConfiguration.getMemoryUsageSize())
-                .maximumSize(cacheConfiguration.getLocalCacheCountSize());
+        if (cacheConfiguration.isLimitByWeight()) {
+            caffeineBuilder.weigher(cacheConfiguration.getWeigher())
+                    .maximumWeight(cacheConfiguration.getMemoryUsageSize());
+        } else {
+            caffeineBuilder.maximumSize(cacheConfiguration.getLocalCacheCountSize());
+        }
         return caffeineBuilder.build();
     }
 }

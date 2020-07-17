@@ -25,6 +25,15 @@ public class CacheConfiguration implements Serializable {
         return weigher == null ? DEFAULT_WEIGHER : weigher;
     }
 
+    /**
+     * 是否采用权重方式进行限制
+     *
+     * @return 若缓存个数没配置的话，返回true
+     */
+    public boolean isLimitByWeight() {
+        return localCacheCountSize <= 0;
+    }
+
     public long getMemoryUsageSize() {
         return memoryUsageSize > 0 ? memoryUsageSize : DEFAULT_MAXIMUM_MEMORY_USAGE_SIZE;
     }

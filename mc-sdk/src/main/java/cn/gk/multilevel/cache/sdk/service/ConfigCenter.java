@@ -28,6 +28,9 @@ public class ConfigCenter {
         return MultilevelCacheBuilder.buildWithConfiguration(configuration);
     }
 
+    /**
+     * 获取本地缓存的最大数量
+     */
     public long getLocalCacheSize() {
         return configuration.getLocalCacheCountSize();
     }

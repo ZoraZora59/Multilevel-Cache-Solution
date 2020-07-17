@@ -87,6 +87,7 @@ class CacheService {
         String targetValue;
         targetValue = tryGetFromRam(key);
         if (StringUtils.isEmpty(targetValue)) {
+            log.debug("在Ram中获取失败，尝试从Redis获取");
             targetValue = tryGetFromRedis(key);
         }
         return targetValue;
@@ -151,7 +152,7 @@ class CacheService {
     }
 
     /**
-     * 清理本地缓存空间
+     * 清理指定的key
      */
     public void cleanCacheByKey(String key) {
         stringRedisTemplate.delete(key);
