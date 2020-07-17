@@ -42,7 +42,7 @@ class TimeWindowService {
     @PostConstruct
     private void initTimeWindowMapAndQueue() {
         LocalDateTime currentTime = LocalDateTime.now();
-        for (int i = 3; i >= 0; i--) {
+        for (int i = TIME_WINDOW_COUNT - 1; i >= 0; i--) {
             int currentWindow = currentTime.plusMinutes(-i).getMinute();
             putNewSingleTimeWindowMap(currentWindow);
         }
@@ -66,7 +66,7 @@ class TimeWindowService {
     private void initKeyCount() {
         try {
             keyCount = Integer.parseInt(userKeyCountValue);
-            keyCount = keyCount <= 0 ? 128 : keyCount;
+            keyCount = keyCount <= 0 ? DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW : keyCount;
         } catch (NumberFormatException numberFormatException) {
             keyCount = DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW;
         }
