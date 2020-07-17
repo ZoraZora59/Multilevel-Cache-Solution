@@ -105,7 +105,7 @@ class TimeWindowService {
     /**
      * <h4>multilevel-cache-solution</h4>
      * <h5>cn.gk.multilevel.cache.sdk.model</h5>
-     * <p>LRU淘汰模式的ConcurrentHashMap</p>
+     * <p>添加了LRU淘汰模式的LinkedHashMap</p>
      *
      * @author zora
      * @since 2020.07.16
