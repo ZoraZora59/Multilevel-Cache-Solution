@@ -13,6 +13,12 @@ import com.github.benmanes.caffeine.cache.Caffeine;
  * @since 2020.07.15
  */
 class MultilevelCacheBuilder {
+    /**
+     * 通过配置类生成Caffeine缓存
+     *
+     * @param cacheConfiguration 自定义或默认的缓存配置类
+     * @return 本地使用的RamCache
+     */
     public static Cache<String, String> buildWithConfiguration(CacheConfiguration cacheConfiguration) {
         Caffeine<Object, Object> caffeineBuilder = Caffeine.newBuilder();
         if (cacheConfiguration.isSoftValues()) {

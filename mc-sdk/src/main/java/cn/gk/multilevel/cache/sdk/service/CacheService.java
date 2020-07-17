@@ -50,6 +50,9 @@ class CacheService {
         log.info("[Multilevel-Cache]----已加载Redis配置{}", autowiredStringRedisTemplate.getClass());
     }
 
+    /**
+     * 定时报告缓存状态任务
+     */
     @PostConstruct
     private void scheduleReporter() {
         SCHEDULE_EXECUTOR.scheduleWithFixedDelay(() -> {

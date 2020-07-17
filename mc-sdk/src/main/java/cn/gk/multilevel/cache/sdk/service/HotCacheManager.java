@@ -25,17 +25,26 @@ class HotCacheManager {
     private TimeWindowService timeWindowService;
     @Autowired
     private ConfigCenter configCenter;
-    private static final ScheduledThreadPoolExecutor scheduleHotKeyFinderExecutor = new ScheduledThreadPoolExecutor(1,
+    private static final ScheduledThreadPoolExecutor SCHEDULE_HOT_KEY_FINDER_EXECUTOR = new ScheduledThreadPoolExecutor(1,
             new ThreadFactoryBuilder().setNameFormat("MC-HotKeyFinder").build());
     private volatile Set<String> hotKeySet = new HashSet<>(1);
 
+    /**
+     * 判断该key是否属于当前的热key
+     *
+     * @param key 键名
+     * @return 热key？
+     */
     public boolean isHotKey(String key) {
         return hotKeySet.contains(key);
     }
 
+    /**
+     * 加载类后初始化定时任务
+     */
     @PostConstruct
     private void scheduleSetting() {
-        scheduleHotKeyFinderExecutor.scheduleWithFixedDelay(() -> {
+        SCHEDULE_HOT_KEY_FINDER_EXECUTOR.scheduleWithFixedDelay(() -> {
             List<Map<String, AtomicInteger>> currentWindowsDataList = timeWindowService.getCurrentWindowsMapDataList();
             Map<String, Integer> counterMap = new HashMap<>(64);
             for (Map<String, AtomicInteger> singleWindowDataMap : currentWindowsDataList) {

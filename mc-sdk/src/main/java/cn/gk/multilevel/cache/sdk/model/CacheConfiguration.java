@@ -21,6 +21,11 @@ public class CacheConfiguration implements Serializable {
     private static final long DEFAULT_MAXIMUM_CACHE_SIZE = 256;
     private static final Weigher<String, String> DEFAULT_WEIGHER = (key, value) -> key.length() + value.length();
 
+    /**
+     * 获取权重计算公式
+     *
+     * @return 权重公式
+     */
     public Weigher<String, String> getWeigher() {
         return weigher == null ? DEFAULT_WEIGHER : weigher;
     }
@@ -34,10 +39,20 @@ public class CacheConfiguration implements Serializable {
         return localCacheCountSize <= 0;
     }
 
+    /**
+     * 获取权重限制值
+     *
+     * @return 权重限制值
+     */
     public long getMemoryUsageSize() {
         return memoryUsageSize > 0 ? memoryUsageSize : DEFAULT_MAXIMUM_MEMORY_USAGE_SIZE;
     }
 
+    /**
+     * 获取内存缓存个数
+     *
+     * @return 内存缓存个数
+     */
     public long getLocalCacheCountSize() {
         return localCacheCountSize > 0 ? localCacheCountSize : DEFAULT_MAXIMUM_CACHE_SIZE;
     }
