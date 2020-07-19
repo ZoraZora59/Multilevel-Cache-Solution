@@ -54,7 +54,6 @@ class HotCacheManager implements IHotKeyManager {
                 List<Map<String, AtomicInteger>> currentWindowsDataList = timeWindowService.getCurrentWindowsMapDataList();
                 Map<String, Integer> counterMap = new HashMap<>(64);
                 for (Map<String, AtomicInteger> singleWindowDataMap : currentWindowsDataList) {
-                    // TODO: 找到当不单独保存为一个新Set的时候会产生ConcurrentModifiedException异常的原因
                     Set<String> keySet = new HashSet<>(singleWindowDataMap.keySet());
                     for (String key : keySet) {
                         if (counterMap.containsKey(key)) {
