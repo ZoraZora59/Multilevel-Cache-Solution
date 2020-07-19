@@ -19,6 +19,6 @@ public class TestConfig {
     public static CacheConfiguration defaultLocalCache() {
         System.out.println("测试类：启用自定义的本地缓存");
 //        return new MultilevelCacheBuilder().withMemoryUsage(64*1024).buildByWeightStrategy();
-        return CacheConfiguration.builder().redisTtl(5).build();
+        return CacheConfiguration.builder().singleWindowMaximumKeyCount(7).localCacheCountSize(3).redisTtl(3).build();
     }
 }

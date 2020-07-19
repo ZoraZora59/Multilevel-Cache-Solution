@@ -20,6 +20,7 @@ public class CacheConfiguration implements Serializable {
     private static final long DEFAULT_MAXIMUM_MEMORY_USAGE_SIZE = 128 * 1024 * 1024;
     private static final long DEFAULT_MAXIMUM_CACHE_SIZE = 256;
     private static final long DEFAULT_REDIS_TTL = 3 * 60;
+    private static final int DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW = 128;
     private static final Weigher<String, String> DEFAULT_WEIGHER = (key, value) -> key.length() + value.length();
 
     /**
@@ -66,6 +67,14 @@ public class CacheConfiguration implements Serializable {
     public long getLocalCacheCountSize() {
         return localCacheCountSize > 0 ? localCacheCountSize : DEFAULT_MAXIMUM_CACHE_SIZE;
     }
+    /**
+     * 获取单个时间窗内统计的最大key个数
+     *
+     * @return 内存缓存个数
+     */
+    public int getSingleWindowMaximumKeyCount() {
+        return singleWindowMaximumKeyCount > 0 ? singleWindowMaximumKeyCount : DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW;
+    }
 
     /**
      * 权重配置
@@ -83,6 +92,10 @@ public class CacheConfiguration implements Serializable {
      * 本地缓存最大个数配置
      */
     private final long localCacheCountSize;
+    /**
+     * 单个时间窗内统计的最大key个数
+     */
+    private final int singleWindowMaximumKeyCount;
 
     /**
      * value软引用

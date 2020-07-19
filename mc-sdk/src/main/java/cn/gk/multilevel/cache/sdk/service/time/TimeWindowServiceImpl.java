@@ -2,11 +2,14 @@ package cn.gk.multilevel.cache.sdk.service.time;
 
 import cn.gk.multilevel.cache.sdk.constants.TimeWindowConstants;
 import cn.gk.multilevel.cache.sdk.model.LruHashMap;
+import cn.gk.multilevel.cache.sdk.service.ConfigCenter;
 import cn.gk.multilevel.cache.sdk.service.ITimeWindowService;
 import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +35,6 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 @Service
 class TimeWindowServiceImpl implements ITimeWindowService {
-    /**
-     * 尝试获取的用户配置
-     * 单个时间窗内统计的最大缓存数
-     */
-    @Value("${multilevelCache.singleTimeWindow.keyCount}")
-    private String userKeyCountValue;
     /**
      * 单个时间窗内统计的最大缓存数
      * 最终采用的数字会覆盖给这个变量，在PostConstruct全部结束后，这个变量读到的就会是最终生效的配置
@@ -78,7 +75,7 @@ class TimeWindowServiceImpl implements ITimeWindowService {
                     }
                 }
             } finally {
-                log.debug("[Multilevel-Cache]----目前时间窗状态【时间窗个数={}, 时间窗分别为[{}]】", timeWindowsMap.size(), timeWindowsMap.keySet());
+                log.info("[Multilevel-Cache]----目前时间窗状态【时间窗个数={}, 时间窗分别为[{}]】", timeWindowsMap.size(), timeWindowsMap.keySet());
             }
         }, 0, 25, TimeUnit.SECONDS);
     }
@@ -89,14 +86,9 @@ class TimeWindowServiceImpl implements ITimeWindowService {
      *
      * @see cn.gk.multilevel.cache.sdk.constants.TimeWindowConstants
      */
-    @PostConstruct
-    private void initKeyCount() {
-        try {
-            keyCount = Integer.parseInt(userKeyCountValue);
-            keyCount = keyCount <= 0 ? TimeWindowConstants.DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW : keyCount;
-        } catch (NumberFormatException numberFormatException) {
-            keyCount = TimeWindowConstants.DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW;
-        }
+    @Autowired
+    private void initKeyCount(ConfigCenter configCenter) {
+        keyCount = configCenter.getSingleWindowMaximumKeyCount();
         log.info("[Multilevel-Cache]----配置的单窗口最大统计key数为{}个.", keyCount);
     }
 
@@ -113,6 +105,9 @@ class TimeWindowServiceImpl implements ITimeWindowService {
                     timeWindowsMap.put(minuteFlag, new ConcurrentLinkedHashMap.Builder<String, AtomicInteger>()
                             .maximumWeightedCapacity(keyCount)
                             .weigher(Weighers.singleton())
+                            .listener((key ,value)->{
+                                System.out.println("[key:"+key+",value:"+value+"] 即将被淘汰");
+                            })
                             .build());
                 }
             } finally {
@@ -143,11 +138,13 @@ class TimeWindowServiceImpl implements ITimeWindowService {
      */
     @Override
     public void increaseCacheHot(String key) {
-        int currentWindow = LocalDateTime.now(ZoneId.systemDefault()).getMinute();
-        if (!timeWindowsMap.containsKey(currentWindow)) {
-            putNewSingleTimeWindowMap(currentWindow);
+        if (Strings.isNotBlank(key)) {
+            int currentWindow = LocalDateTime.now(ZoneId.systemDefault()).getMinute();
+            if (!timeWindowsMap.containsKey(currentWindow)) {
+                putNewSingleTimeWindowMap(currentWindow);
+            }
+            tryIncreaseCount(key, currentWindow);
         }
-        tryIncreaseCount(key, currentWindow);
     }
 
     /**

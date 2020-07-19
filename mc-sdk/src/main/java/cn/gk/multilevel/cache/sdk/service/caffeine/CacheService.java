@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -44,13 +45,13 @@ class CacheService implements IRamCacheService {
     @Qualifier("MultilevelCacheInRam")
     public void initializeCache(Cache<String, String> cache) {
         localCache = cache;
-        log.debug("[Multilevel-Cache]----已加载缓存配置{}", cache.getClass());
+        log.info("[Multilevel-Cache]----已加载缓存配置{}", cache.getClass());
     }
 
     @Autowired
     public void initializeCache(StringRedisTemplate autowiredStringRedisTemplate) {
         stringRedisTemplate = autowiredStringRedisTemplate;
-        log.debug("[Multilevel-Cache]----已加载Redis配置{}", autowiredStringRedisTemplate.getClass());
+        log.info("[Multilevel-Cache]----已加载Redis配置{}", autowiredStringRedisTemplate.getClass());
     }
 
     @Autowired
@@ -61,11 +62,12 @@ class CacheService implements IRamCacheService {
 
     /**
      * 定时报告缓存状态任务
+     * TODO:解决报告结果永远为0的问题
      */
     @PostConstruct
     private void scheduleReporter() {
         SCHEDULE_EXECUTOR.scheduleWithFixedDelay(() -> {
-            log.debug("[Multilevel-Cache]----当前本地缓存报告：{}", localCache.stats().toString());
+            log.info("[Multilevel-Cache]----当前本地缓存报告：{}", localCache.stats().toString());
         }, 15, 60, TimeUnit.SECONDS);
     }
 
@@ -99,10 +101,17 @@ class CacheService implements IRamCacheService {
         String targetValue;
         targetValue = tryGetFromRam(key);
         if (StringUtils.isEmpty(targetValue)) {
-            log.debug("在Ram中获取失败，尝试从Redis获取");
+            log.info("在Ram中获取失败，尝试从Redis获取");
             targetValue = tryGetFromRedis(key);
+            writeIntoRamConditionOnHotManager(key, targetValue);
         }
         return targetValue;
+    }
+
+    private void writeIntoRamConditionOnHotManager(String key, String jsonString) {
+        if (Strings.isNotBlank(key) && hotCacheManager.isHotKey(key) && Strings.isNotBlank(jsonString)) {
+            localCache.put(key, jsonString);
+        }
     }
 
     /**
@@ -155,9 +164,7 @@ class CacheService implements IRamCacheService {
     public <T> void putObjectIntoCache(String key, T value, long ttl) {
         String jsonString = JSON.toJSONString(value);
         stringRedisTemplate.opsForValue().set(key, jsonString, ttl, TimeUnit.SECONDS);
-        if (hotCacheManager.isHotKey(key)) {
-            localCache.put(key, jsonString);
-        }
+        writeIntoRamConditionOnHotManager(key, jsonString);
     }
 
     /**

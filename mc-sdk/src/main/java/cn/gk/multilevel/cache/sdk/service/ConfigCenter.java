@@ -34,6 +34,12 @@ public class ConfigCenter {
     public long getLocalCacheSize() {
         return configuration.getLocalCacheCountSize();
     }
+    /**
+     * 获取本地缓存的最大数量
+     */
+    public int getSingleWindowMaximumKeyCount() {
+        return configuration.getSingleWindowMaximumKeyCount();
+    }
 
     /**
      * 获取Redis中key过期时间

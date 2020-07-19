@@ -64,11 +64,11 @@ class HotCacheManager implements IHotKeyManager {
                     }
                 }
                 hotKeySet = counterMap.keySet().stream().sorted(Comparator.comparingInt(counterMap::get).reversed()).limit(configCenter.getLocalCacheSize()).collect(Collectors.toSet());
-                log.debug("[Multilevel-Cache]----目前的热Key配置为{}", hotKeySet);
+                log.info("[Multilevel-Cache]----目前的热Key配置为{}", hotKeySet);
             } catch (Throwable throwable) {
                 log.error("[Multilevel-Cache]----生成当前热key失败", throwable);
             }
-        }, 15, 15, TimeUnit.SECONDS);
+        }, 3, 3, TimeUnit.SECONDS);
     }
 
 }
