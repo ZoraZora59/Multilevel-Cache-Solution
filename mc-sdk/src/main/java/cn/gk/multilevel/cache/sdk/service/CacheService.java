@@ -1,5 +1,6 @@
 package cn.gk.multilevel.cache.sdk.service;
 
+import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -34,8 +35,7 @@ class CacheService {
     private volatile static Cache<String, String> localCache;
     private static final int DEFAULT_REDIS_TTL = 3 * 60;
     private static StringRedisTemplate stringRedisTemplate;
-    private static final ScheduledThreadPoolExecutor SCHEDULE_EXECUTOR = new ScheduledThreadPoolExecutor(1,
-            new ThreadFactoryBuilder().setNameFormat("MC-Reporter").build());
+    private static final ScheduledThreadPoolExecutor SCHEDULE_EXECUTOR = ThreadPoolUtils.getScheduledThreadPool(1,"MC-Reporter");
 
     @Autowired
     @Qualifier("MultilevelCacheInRam")
@@ -56,7 +56,7 @@ class CacheService {
     @PostConstruct
     private void scheduleReporter() {
         SCHEDULE_EXECUTOR.scheduleWithFixedDelay(() -> {
-            log.info("[Multilevel-Cache]----当前本地缓存报告：{}", localCache.stats().toString());
+            log.debug("[Multilevel-Cache]----当前本地缓存报告：{}", localCache.stats().toString());
         }, 15, 60, TimeUnit.SECONDS);
     }
 
@@ -90,7 +90,7 @@ class CacheService {
         String targetValue;
         targetValue = tryGetFromRam(key);
         if (StringUtils.isEmpty(targetValue)) {
-            log.info("在Ram中获取失败，尝试从Redis获取");
+            log.debug("在Ram中获取失败，尝试从Redis获取");
             targetValue = tryGetFromRedis(key);
         }
         return targetValue;

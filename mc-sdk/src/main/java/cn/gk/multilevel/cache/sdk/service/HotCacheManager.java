@@ -1,14 +1,12 @@
 package cn.gk.multilevel.cache.sdk.service;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.sun.tools.jdi.InternalEventHandler;
+import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,8 +27,7 @@ class HotCacheManager {
     private TimeWindowService timeWindowService;
     @Autowired
     private ConfigCenter configCenter;
-    private static final ScheduledThreadPoolExecutor SCHEDULE_HOT_KEY_FINDER_EXECUTOR = new ScheduledThreadPoolExecutor(1,
-            new ThreadFactoryBuilder().setNameFormat("MC-HotKeyFinder").build());
+    private static final ScheduledThreadPoolExecutor SCHEDULE_HOT_KEY_FINDER_EXECUTOR = ThreadPoolUtils.getScheduledThreadPool(1,"MC-HotKeyFinder");
     private volatile Set<String> hotKeySet = new HashSet<>(1);
 
     /**
@@ -64,7 +61,7 @@ class HotCacheManager {
                     }
                 }
                 hotKeySet = counterMap.keySet().stream().sorted(Comparator.comparingInt(counterMap::get).reversed()).limit(configCenter.getLocalCacheSize()).collect(Collectors.toSet());
-                log.info("[Multilevel-Cache]----目前的热Key配置为{}", hotKeySet);
+                log.debug("[Multilevel-Cache]----目前的热Key配置为{}", hotKeySet);
             } catch (Throwable throwable) {
                 log.error("[Multilevel-Cache]----生成当前热key失败", throwable);
             }

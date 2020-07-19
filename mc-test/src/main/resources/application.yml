@@ -1,1 +1,6 @@
-multilevelCache.singleTimeWindow.keyCount: 3
+multilevelCache:
+  singleTimeWindow:
+    keyCount: 3
+logging:
+  level:
+    root: debug
