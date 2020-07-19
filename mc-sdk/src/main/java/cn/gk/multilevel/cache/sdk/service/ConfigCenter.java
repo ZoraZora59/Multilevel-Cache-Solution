@@ -35,4 +35,11 @@ public class ConfigCenter {
         return configuration.getLocalCacheCountSize();
     }
 
+    /**
+     * 获取Redis中key过期时间
+     */
+    public long getRedisTtl() {
+        return configuration.getRedisTtl();
+    }
+
 }

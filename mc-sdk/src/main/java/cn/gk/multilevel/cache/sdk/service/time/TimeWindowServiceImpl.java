@@ -1,7 +1,8 @@
-package cn.gk.multilevel.cache.sdk.service;
+package cn.gk.multilevel.cache.sdk.service.time;
 
 import cn.gk.multilevel.cache.sdk.constants.TimeWindowConstants;
 import cn.gk.multilevel.cache.sdk.model.LruHashMap;
+import cn.gk.multilevel.cache.sdk.service.ITimeWindowService;
 import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
@@ -30,7 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Slf4j
 @Service
-class TimeWindowService {
+class TimeWindowServiceImpl implements ITimeWindowService {
     /**
      * 尝试获取的用户配置
      * 单个时间窗内统计的最大缓存数
@@ -140,6 +141,7 @@ class TimeWindowService {
      *
      * @param key 缓存key
      */
+    @Override
     public void increaseCacheHot(String key) {
         int currentWindow = LocalDateTime.now(ZoneId.systemDefault()).getMinute();
         if (!timeWindowsMap.containsKey(currentWindow)) {
@@ -153,6 +155,7 @@ class TimeWindowService {
      *
      * @return 当前的n个时间窗的统计信息
      */
+    @Override
     public List<Map<String, AtomicInteger>> getCurrentWindowsMapDataList() {
         return new ArrayList<>(timeWindowsMap.values());
     }

@@ -19,6 +19,7 @@ public class CacheConfiguration implements Serializable {
 
     private static final long DEFAULT_MAXIMUM_MEMORY_USAGE_SIZE = 128 * 1024 * 1024;
     private static final long DEFAULT_MAXIMUM_CACHE_SIZE = 256;
+    private static final long DEFAULT_REDIS_TTL = 3 * 60;
     private static final Weigher<String, String> DEFAULT_WEIGHER = (key, value) -> key.length() + value.length();
 
     /**
@@ -28,6 +29,15 @@ public class CacheConfiguration implements Serializable {
      */
     public Weigher<String, String> getWeigher() {
         return weigher == null ? DEFAULT_WEIGHER : weigher;
+    }
+
+    /**
+     * 获取redis过期时间配置
+     *
+     * @return 权重公式
+     */
+    public long getRedisTtl() {
+        return redisTtl == 0 ? DEFAULT_REDIS_TTL : redisTtl;
     }
 
     /**
@@ -65,6 +75,10 @@ public class CacheConfiguration implements Serializable {
      * 基于权重的最大用量
      */
     private final long memoryUsageSize;
+    /**
+     * redis的key过期时间
+     */
+    private final long redisTtl;
     /**
      * 本地缓存最大个数配置
      */

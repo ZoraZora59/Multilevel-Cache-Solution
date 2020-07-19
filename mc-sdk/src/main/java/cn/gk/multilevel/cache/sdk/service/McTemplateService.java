@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 public class McTemplateService implements McTemplate {
     @Autowired
-    private CacheService cacheService;
+    private IRamCacheService cacheService;
 
     /**
      * 尝试获取缓存中的对象，可能会拿到null
@@ -30,7 +30,7 @@ public class McTemplateService implements McTemplate {
      * @throws JSONException json序列化失败
      */
     @Override
-    public <V> V tryGetValue(@NonNull String key, Class<V> clazz) throws JSONException {
+    public <V> V tryGetValue(@NonNull String key, @NonNull Class<V> clazz) throws JSONException {
         return cacheService.tryGetValue(key, clazz);
     }
 
@@ -43,7 +43,7 @@ public class McTemplateService implements McTemplate {
      * @throws JSONException json序列化失败
      */
     @Override
-    public <V> List<V> tryGetValueArrays(@NonNull String key, Class<V> clazz) throws JSONException {
+    public <V> List<V> tryGetValueArrays(@NonNull String key, @NonNull Class<V> clazz) throws JSONException {
         return cacheService.tryGetValueArrays(key, clazz);
     }
 
@@ -54,7 +54,7 @@ public class McTemplateService implements McTemplate {
      * @param value 缓存对象
      */
     @Override
-    public <T> void putObjectIntoCache(@NonNull String key, T value) {
+    public <T> void putObjectIntoCache(@NonNull String key, @NonNull T value) {
         cacheService.putObjectIntoCache(key, value);
     }
 
@@ -66,7 +66,10 @@ public class McTemplateService implements McTemplate {
      * @param ttl   过期时间，单位秒
      */
     @Override
-    public <T> void putObjectIntoCache(@NonNull String key, T value, long ttl) {
+    public <T> void putObjectIntoCache(@NonNull String key, @NonNull T value, long ttl) {
+        if (ttl == 0) {
+            throw new IllegalArgumentException("ttl cant be zero.");
+        }
         cacheService.putObjectIntoCache(key, value, ttl);
     }
 

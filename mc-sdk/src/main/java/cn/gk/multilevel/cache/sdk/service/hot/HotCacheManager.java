@@ -1,5 +1,8 @@
-package cn.gk.multilevel.cache.sdk.service;
+package cn.gk.multilevel.cache.sdk.service.hot;
 
+import cn.gk.multilevel.cache.sdk.service.ConfigCenter;
+import cn.gk.multilevel.cache.sdk.service.IHotKeyManager;
+import cn.gk.multilevel.cache.sdk.service.ITimeWindowService;
 import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +25,9 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-class HotCacheManager {
+class HotCacheManager implements IHotKeyManager {
     @Autowired
-    private TimeWindowService timeWindowService;
+    private ITimeWindowService timeWindowService;
     @Autowired
     private ConfigCenter configCenter;
     private static final ScheduledThreadPoolExecutor SCHEDULE_HOT_KEY_FINDER_EXECUTOR = ThreadPoolUtils.getScheduledThreadPool(1,"MC-HotKeyFinder");
@@ -36,6 +39,7 @@ class HotCacheManager {
      * @param key 键名
      * @return 热key？
      */
+    @Override
     public boolean isHotKey(String key) {
         return hotKeySet.contains(key);
     }

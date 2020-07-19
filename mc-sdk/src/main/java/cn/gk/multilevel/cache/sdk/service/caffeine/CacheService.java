@@ -1,10 +1,13 @@
-package cn.gk.multilevel.cache.sdk.service;
+package cn.gk.multilevel.cache.sdk.service.caffeine;
 
+import cn.gk.multilevel.cache.sdk.service.ConfigCenter;
+import cn.gk.multilevel.cache.sdk.service.IHotKeyManager;
+import cn.gk.multilevel.cache.sdk.service.IRamCacheService;
+import cn.gk.multilevel.cache.sdk.service.ITimeWindowService;
 import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.github.benmanes.caffeine.cache.Cache;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,27 +30,33 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-class CacheService {
+class CacheService implements IRamCacheService {
     @Autowired
-    private TimeWindowService timeWindowService;
+    private ITimeWindowService timeWindowService;
     @Autowired
-    private HotCacheManager hotCacheManager;
+    private IHotKeyManager hotCacheManager;
+    private long redisTtl;
     private volatile static Cache<String, String> localCache;
-    private static final int DEFAULT_REDIS_TTL = 3 * 60;
     private static StringRedisTemplate stringRedisTemplate;
-    private static final ScheduledThreadPoolExecutor SCHEDULE_EXECUTOR = ThreadPoolUtils.getScheduledThreadPool(1,"MC-Reporter");
+    private static final ScheduledThreadPoolExecutor SCHEDULE_EXECUTOR = ThreadPoolUtils.getScheduledThreadPool(1, "MC-Reporter");
 
     @Autowired
     @Qualifier("MultilevelCacheInRam")
     public void initializeCache(Cache<String, String> cache) {
         localCache = cache;
-        log.info("[Multilevel-Cache]----已加载缓存配置{}", cache.getClass());
+        log.debug("[Multilevel-Cache]----已加载缓存配置{}", cache.getClass());
     }
 
     @Autowired
     public void initializeCache(StringRedisTemplate autowiredStringRedisTemplate) {
         stringRedisTemplate = autowiredStringRedisTemplate;
-        log.info("[Multilevel-Cache]----已加载Redis配置{}", autowiredStringRedisTemplate.getClass());
+        log.debug("[Multilevel-Cache]----已加载Redis配置{}", autowiredStringRedisTemplate.getClass());
+    }
+
+    @Autowired
+    public void initializeRedisTtl(ConfigCenter configCenter) {
+        redisTtl = configCenter.getRedisTtl();
+        log.info("[Multilevel-Cache]----已加载Redis过期时间配置为{}秒", redisTtl);
     }
 
     /**
@@ -104,6 +113,7 @@ class CacheService {
      * @return 对象或null
      * @throws JSONException json序列化失败
      */
+    @Override
     public <V> V tryGetValue(String key, Class<V> clazz) throws JSONException {
         timeWindowService.increaseCacheHot(key);
         return JSON.parseObject(tryGetValueByChainTrace(key), clazz);
@@ -117,6 +127,7 @@ class CacheService {
      * @return 对象列表或null
      * @throws JSONException json序列化失败
      */
+    @Override
     public <V> List<V> tryGetValueArrays(String key, Class<V> clazz) throws JSONException {
         timeWindowService.increaseCacheHot(key);
         return JSON.parseArray(tryGetValueByChainTrace(key), clazz);
@@ -128,8 +139,9 @@ class CacheService {
      * @param key   缓存key
      * @param value 缓存对象
      */
+    @Override
     public <T> void putObjectIntoCache(String key, T value) {
-        putObjectIntoCache(key, value, DEFAULT_REDIS_TTL);
+        putObjectIntoCache(key, value, redisTtl);
     }
 
     /**
@@ -139,6 +151,7 @@ class CacheService {
      * @param value 缓存对象
      * @param ttl   过期时间，单位秒
      */
+    @Override
     public <T> void putObjectIntoCache(String key, T value, long ttl) {
         String jsonString = JSON.toJSONString(value);
         stringRedisTemplate.opsForValue().set(key, jsonString, ttl, TimeUnit.SECONDS);
@@ -150,6 +163,7 @@ class CacheService {
     /**
      * 清理本地缓存空间
      */
+    @Override
     public void cleanUpRamCache() {
         localCache.cleanUp();
     }
@@ -157,6 +171,7 @@ class CacheService {
     /**
      * 清理指定的key
      */
+    @Override
     public void cleanCacheByKey(String key) {
         stringRedisTemplate.delete(key);
         localCache.invalidate(key);
