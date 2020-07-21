@@ -1,9 +1,6 @@
 package cn.gk.multilevel.cache.sdk.service.caffeine;
 
-import cn.gk.multilevel.cache.sdk.service.ConfigCenter;
-import cn.gk.multilevel.cache.sdk.service.IHotKeyManager;
-import cn.gk.multilevel.cache.sdk.service.IRamCacheService;
-import cn.gk.multilevel.cache.sdk.service.ITimeWindowService;
+import cn.gk.multilevel.cache.sdk.service.*;
 import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
@@ -31,9 +28,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-class CacheService implements IRamCacheService {
+class CacheServiceImpl implements IRamCacheService {
     @Autowired
-    private ITimeWindowService timeWindowService;
+    private ICounterService counterService;
     @Autowired
     private IHotKeyManager hotCacheManager;
     private long redisTtl;
@@ -124,7 +121,7 @@ class CacheService implements IRamCacheService {
      */
     @Override
     public <V> V tryGetValue(String key, Class<V> clazz) throws JSONException {
-        timeWindowService.increaseCacheHot(key);
+        counterService.asyncIncreaseCacheHot(key);
         return JSON.parseObject(tryGetValueByChainTrace(key), clazz);
     }
 
@@ -138,7 +135,7 @@ class CacheService implements IRamCacheService {
      */
     @Override
     public <V> List<V> tryGetValueArrays(String key, Class<V> clazz) throws JSONException {
-        timeWindowService.increaseCacheHot(key);
+        counterService.asyncIncreaseCacheHot(key);
         return JSON.parseArray(tryGetValueByChainTrace(key), clazz);
     }
 
