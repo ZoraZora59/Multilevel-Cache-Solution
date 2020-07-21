@@ -34,6 +34,7 @@ public class ConfigCenter {
     public long getLocalCacheSize() {
         return configuration.getLocalCacheCountSize();
     }
+
     /**
      * 获取本地缓存的最大数量
      */

@@ -10,7 +10,6 @@ import com.googlecode.concurrentlinkedhashmap.Weighers;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -82,7 +81,6 @@ class TimeWindowServiceImpl implements ITimeWindowService {
 
     /**
      * 初始化配置信息，读取用户配置的单时间窗统计的最大key个数
-     * 若未读取到则会采用TimeWindowsConstants中的DEFAULT_KEY_COUNT_IN_SINGLE_WINDOW
      *
      * @see cn.gk.multilevel.cache.sdk.constants.TimeWindowConstants
      */
