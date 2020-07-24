@@ -4,10 +4,7 @@ import cn.gk.multilevel.cache.sdk.api.MultilevelCacheKeyGenerator;
 import org.apache.logging.log4j.util.Strings;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 /**
  * <h3>multilevel-cache-solution</h3>
