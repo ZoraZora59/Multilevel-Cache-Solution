@@ -2,6 +2,7 @@ package cn.gk.multilevel.cache.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
  * @author zora
  * @since 2020.07.16
  */
+@EnableCaching
 @SpringBootApplication
 @ComponentScan("cn.gk.multilevel.cache")
 public class StartApplication {
