@@ -36,6 +36,7 @@ public class MultilevelCacheableAop {
     }
 
     @Around("pointCut()")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public Object around(ProceedingJoinPoint pjp) throws Throwable {
         MethodSignature signature = ((MethodSignature) pjp.getSignature());
         MultilevelCacheable mcAnnotation = signature.getMethod().getAnnotation(MultilevelCacheable.class);
