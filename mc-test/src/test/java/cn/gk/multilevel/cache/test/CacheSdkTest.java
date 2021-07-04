@@ -1,6 +1,7 @@
 package cn.gk.multilevel.cache.test;
 
 import cn.gk.multilevel.cache.sdk.api.McTemplate;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -38,12 +39,13 @@ public class CacheSdkTest {
             try {
                 countDownLatch.await(); // 等待其它线程
                 for (int i = 0; i < 99999; i++) {
-                    String key = keyPrefix + (RandomUtil.randomInt(1,counter));
+                    String key = keyPrefix + (RandomUtil.randomInt(1, counter));
                     log.info("激活-{}", key);
                     multilevelCacheTemplate.tryGetValue(key, String.class);
                     try {
                         Thread.sleep(50);
-                    }catch (Exception ignore){}
+                    } catch (Exception ignore) {
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -63,9 +65,11 @@ public class CacheSdkTest {
             log.info("激活-{}", key);
             multilevelCacheTemplate.putObjectIntoCache(key, valuePrefix + (i + 1));
         }
-        new Thread(new ActAsNormalUser(countDownLatch,keyPrefix,low)).start();
+        Thread lowThread = new Thread(new ActAsNormalUser(countDownLatch, keyPrefix, low));
+        lowThread.start();
         countDownLatch.countDown();
-        new Thread(new ActAsNormalUser(countDownLatch,keyPrefix,high)).start();
+        Thread highThread = new Thread(new ActAsNormalUser(countDownLatch, keyPrefix, high));
+        highThread.start();
         countDownLatch.countDown();
         try {
             Thread.sleep(1000 * 5);
@@ -94,5 +98,7 @@ public class CacheSdkTest {
         log.info("通过LRU检验");
         Assert.assertEquals(multilevelCacheTemplate.tryGetValue(keyPrefix + 1, String.class), valuePrefix + 1);
         log.info("通过Get检验");
+        ThreadUtil.interrupt(highThread,false);
+        ThreadUtil.interrupt(lowThread,false);
     }
 }

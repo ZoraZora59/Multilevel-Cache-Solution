@@ -58,7 +58,7 @@ public class HotKeyTest {
             for (int i = 0; i < 200; i++) {
                 timeWindowService.increaseCacheHot(KEY_1);
             }
-        });
+        }).start();
         countDownLatch.countDown();
         new Thread(() -> {
             try {
@@ -68,7 +68,7 @@ public class HotKeyTest {
             for (int i = 0; i < 180; i++) {
                 timeWindowService.increaseCacheHot(KEY_2);
             }
-        });
+        }).start();
         countDownLatch.countDown();
         new Thread(() -> {
             try {
@@ -78,7 +78,7 @@ public class HotKeyTest {
             for (int i = 0; i < 160; i++) {
                 timeWindowService.increaseCacheHot(KEY_3);
             }
-        });
+        }).start();
         countDownLatch.countDown();
         new Thread(() -> {
             try {
@@ -88,7 +88,7 @@ public class HotKeyTest {
             for (int i = 0; i < 140; i++) {
                 timeWindowService.increaseCacheHot(KEY_4);
             }
-        });
+        }).start();
         countDownLatch.countDown();
         new Thread(() -> {
             try {
@@ -98,7 +98,7 @@ public class HotKeyTest {
             for (int i = 0; i < 100; i++) {
                 timeWindowService.increaseCacheHot(KEY_5);
             }
-        });
+        }).start();
         countDownLatch.countDown();
     }
 

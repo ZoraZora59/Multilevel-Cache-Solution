@@ -23,6 +23,7 @@ public class ConcurrentModifiedExceptionTest {
     public static void main(String[] args) {
         Demo demo = new Demo();
         demo.test();
+        System.exit(0);
     }
 }
 
@@ -72,7 +73,7 @@ class Demo {
                     }
                 }
             }
-            System.out.println("chenggong");
+            System.out.println("成功");
         } catch (Throwable throwable) {
             System.out.println("sb");
             throwable.printStackTrace();
