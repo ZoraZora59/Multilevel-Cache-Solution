@@ -120,6 +120,9 @@ class CacheServiceImpl implements ICacheService {
     }
 
     private void writeIntoRamConditionOnHotManager(String key, String jsonString) {
+        if(Objects.isNull(stringRedisTemplate)) {
+            localCache.put(key, jsonString);
+        }
         if (Strings.isNotBlank(key) && hotCacheManager.isHotKey(key) && Strings.isNotBlank(jsonString)) {
             localCache.put(key, jsonString);
         }
