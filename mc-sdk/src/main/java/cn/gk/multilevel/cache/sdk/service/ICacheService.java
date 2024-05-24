@@ -12,7 +12,7 @@ import java.util.List;
  * @author zora
  * @since 2020.07.19
  */
-public interface IRamCacheService {
+public interface ICacheService {
 
     /**
      * 尝试获取缓存中的对象，可能会拿到null

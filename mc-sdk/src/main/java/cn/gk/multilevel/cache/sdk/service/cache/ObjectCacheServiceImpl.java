@@ -3,7 +3,7 @@
 //import cn.gk.multilevel.cache.sdk.service.ConfigCenter;
 //import cn.gk.multilevel.cache.sdk.service.ICounterService;
 //import cn.gk.multilevel.cache.sdk.service.IHotKeyManager;
-//import cn.gk.multilevel.cache.sdk.service.IRamCacheService;
+//import cn.gk.multilevel.cache.sdk.service.ICacheService;
 //import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
 //import com.alibaba.fastjson.JSON;
 //import com.alibaba.fastjson.JSONException;
@@ -32,7 +32,7 @@
 //@Service
 //@Primary
 //
-//public class ObjectCacheServiceImpl implements IRamCacheService {
+//public class ObjectCacheServiceImpl implements ICacheService {
 //    @Autowired
 //    private ICounterService counterService;
 //    @Autowired

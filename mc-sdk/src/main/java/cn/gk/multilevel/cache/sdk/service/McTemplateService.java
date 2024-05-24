@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 public class McTemplateService implements McTemplate {
     @Autowired
-    private IRamCacheService cacheService;
+    private ICacheService cacheService;
 
     /**
      * 尝试获取缓存中的对象，可能会拿到null

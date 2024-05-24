@@ -1,6 +1,7 @@
 package cn.gk.multilevel.cache.test.config;
 
 import cn.gk.multilevel.cache.sdk.model.CacheConfiguration;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * @author zora
  * @since 2020.07.16
  */
+@Slf4j
 @Configuration
 public class TestConfig {
 

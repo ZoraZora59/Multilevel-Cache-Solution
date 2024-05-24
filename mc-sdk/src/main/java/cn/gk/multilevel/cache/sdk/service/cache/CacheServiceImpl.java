@@ -1,4 +1,4 @@
-package cn.gk.multilevel.cache.sdk.service.caffeine;
+package cn.gk.multilevel.cache.sdk.service.cache;
 
 import cn.gk.multilevel.cache.sdk.service.*;
 import cn.gk.multilevel.cache.sdk.util.ThreadPoolUtils;
@@ -9,12 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -28,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-class CacheServiceImpl implements IRamCacheService {
+class CacheServiceImpl implements ICacheService {
     @Autowired
     private ICounterService counterService;
     @Autowired
@@ -45,7 +47,9 @@ class CacheServiceImpl implements IRamCacheService {
         log.info("[Multilevel-Cache]----已加载缓存配置{}", cache.getClass());
     }
 
-    @Autowired
+    @Autowired(required = false)
+    @ConditionalOnBean(name = "MultilevelCacheRedisTemplate")
+    @Qualifier("MultilevelCacheRedisTemplate")
     public void initializeCache(StringRedisTemplate autowiredStringRedisTemplate) {
         stringRedisTemplate = autowiredStringRedisTemplate;
         log.info("[Multilevel-Cache]----已加载Redis配置{}", autowiredStringRedisTemplate.getClass());
@@ -63,6 +67,9 @@ class CacheServiceImpl implements IRamCacheService {
      */
     @PostConstruct
     private void scheduleReporter() {
+        if (Objects.isNull(stringRedisTemplate)) {
+            log.warn("[Multilevel-Cache]----没有获取到Redis配置，多级缓存降级到单层本地缓存");
+        }
         SCHEDULE_EXECUTOR.scheduleWithFixedDelay(() -> {
             log.info("[Multilevel-Cache]----当前本地缓存报告：{}", localCache.stats().toString());
         }, 15, 60, TimeUnit.SECONDS);
@@ -85,6 +92,9 @@ class CacheServiceImpl implements IRamCacheService {
      * @return json形式的value或null
      */
     private String tryGetFromRedis(String key) {
+        if (Objects.isNull(stringRedisTemplate)) {
+            return null;
+        }
         return stringRedisTemplate.opsForValue().get(key);
     }
 
@@ -97,11 +107,15 @@ class CacheServiceImpl implements IRamCacheService {
     private String tryGetValueByChainTrace(String key) {
         String targetValue;
         targetValue = tryGetFromRam(key);
-        if (StringUtils.isEmpty(targetValue)) {
-            log.info("在Ram中获取失败，尝试从Redis获取");
-            targetValue = tryGetFromRedis(key);
-            writeIntoRamConditionOnHotManager(key, targetValue);
+        if (!StringUtils.isEmpty(targetValue)) {
+            return targetValue;
         }
+        log.debug("在Ram中获取失败，尝试从Redis获取");
+        targetValue = tryGetFromRedis(key);
+        if (StringUtils.isEmpty(targetValue)) {
+            return Strings.EMPTY;
+        }
+        writeIntoRamConditionOnHotManager(key, targetValue);
         return targetValue;
     }
 
@@ -160,7 +174,9 @@ class CacheServiceImpl implements IRamCacheService {
     @Override
     public <T> void putObjectIntoCache(String key, T value, long ttl) {
         String jsonString = JSON.toJSONString(value);
-        stringRedisTemplate.opsForValue().set(key, jsonString, ttl, TimeUnit.SECONDS);
+        if (Objects.nonNull(stringRedisTemplate)) {
+            stringRedisTemplate.opsForValue().set(key, jsonString, ttl, TimeUnit.SECONDS);
+        }
         writeIntoRamConditionOnHotManager(key, jsonString);
     }
 
@@ -177,7 +193,9 @@ class CacheServiceImpl implements IRamCacheService {
      */
     @Override
     public void cleanCacheByKey(String key) {
-        stringRedisTemplate.delete(key);
+        if (Objects.nonNull(stringRedisTemplate)) {
+            stringRedisTemplate.delete(key);
+        }
         localCache.invalidate(key);
     }
 
