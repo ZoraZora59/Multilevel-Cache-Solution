@@ -13,6 +13,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest
 @Slf4j
@@ -72,7 +76,7 @@ public class CacheSdkTest {
         highThread.start();
         countDownLatch.countDown();
         try {
-            Thread.sleep(1000 * 5);
+            TimeUnit.SECONDS.sleep(5);
         } catch (Exception ignore) {
         }
         for (int i = 0; i < low; i++) {
@@ -94,10 +98,8 @@ public class CacheSdkTest {
             log.info("激活-{}", key);
             multilevelCacheTemplate.tryGetValue(key, String.class);
         }
-        Assert.assertNull(multilevelCacheTemplate.tryGetValue(keyPrefix + (low + 1), String.class));
-        log.info("通过LRU检验");
-        Assert.assertEquals(multilevelCacheTemplate.tryGetValue(keyPrefix + 1, String.class), valuePrefix + 1);
-        log.info("通过Get检验");
+        assertNull(multilevelCacheTemplate.tryGetValue(keyPrefix + (low + 1), String.class),"未通过LRU检验");
+        assertEquals( valuePrefix + 1,multilevelCacheTemplate.tryGetValue(keyPrefix + 1, String.class),"未通过Get检验");
         ThreadUtil.interrupt(highThread,false);
         ThreadUtil.interrupt(lowThread,false);
     }
