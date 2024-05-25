@@ -4,3 +4,7 @@
 spring:
   application:
     name: MY-DEMO
+mlc:
+    host: localhost
+    port: 6379
+    connectionTimeout: 500

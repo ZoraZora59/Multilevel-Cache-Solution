@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * <h3>multilevel-cache-solution</h3>
  * <h4>cn.gk.multilevel.cache.test</h4>
@@ -34,8 +36,7 @@ public class TimeWindowTest {
         String key = "mydemo";
         timeWindowService.increaseCacheHot(key);
         List<Map<String, AtomicInteger>> windowList = timeWindowService.getCurrentWindowsMapDataList();
-        Assert.assertTrue(checkWindowListToFindExistLevelOneHotKey(windowList, key));
-        log.info("热度滑窗统计正常");
+        assertTrue( "热度滑窗统计异常",checkWindowListToFindExistLevelOneHotKey(windowList, key));
     }
 
     private boolean checkWindowListToFindExistLevelOneHotKey(List<Map<String, AtomicInteger>> windowList, String targetKey) {

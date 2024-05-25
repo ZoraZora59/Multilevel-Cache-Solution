@@ -27,6 +27,7 @@
 
         <aspectJ.version>1.9.5</aspectJ.version>
         <lombok.version>1.18.12</lombok.version>
+        <jedis.version>3.2.0</jedis.version>
         <lruLinkedHashMap.version>1.4.2</lruLinkedHashMap.version>
         <spring-boot-starter.version>2.2.4.RELEASE</spring-boot-starter.version>
         <commons-lang3.version>3.10</commons-lang3.version>
@@ -90,6 +91,11 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
             </dependency>
 <!--            <dependency>-->
 <!--                <groupId>org.springframework.boot</groupId>-->
